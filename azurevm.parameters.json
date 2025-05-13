@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "location": {
+        "value": "centralindia"
+      },
+      "vmSize": {
+        "value": "Standard_D2s_v3"
+      },
+      "adminUsername": {
+        "value": "azureuser"
+      },
+      "adminPublicKey": {
+        "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDOTrBgfCAU4eEs8BmYLNAxEgF85/SCrH8eQduXuQny1AfB1znZn2Rdtk3ym5KFKklPiy31Ct8gijMc9ftrdNbwuWgxMWwCiMiPoqvIcMTKFWXV0z8Bw8zSgMItvkbLGN+ctcbKrzSXfGGDtObcRMDukAOND4wQ+XgQq9eYlv40giiyChu0Zn+0Df8zJztphXPDieAS/82KlZTkPhb9Q7wWRyydvjrYDfyY8gBHYmy8PytWxKYUv1zx+zoTukjhDRHOLYx0i6qKCYukBhJdvj45OtBpe6RV1GVI3bpNXJ737pkwDL3Hq/hpSPphdBZlemP52kuRJ1OkiBNKj3XjEbU5 pct176@PCT176"
+      }
+    }
+}
