@@ -158,6 +158,57 @@ final url = https://8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BE
 Click on connect (status should be successful)
 
 Go to Applications -> new app -> Application Name=voteapp-service, project name=default, SYNC POLICY=automatic, repo url will be provided, path=k8s-specifications, cluster url-provided, Namespace=default -> Create
+
+
+In repo create new folder=scripts, file name = updateK8sManifests.sh
+paste below script in that file
+
+
+
+#!/bin/bash
+
+set -x
+
+# Set the repository URL
+REPO_URL="https://8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh@dev.azure.com/bhaktiraval18112001/voting-app/_git/voting-app"
+
+# Clone the git repository into the /tmp directory
+git clone "$REPO_URL" /tmp/temp_repo
+
+# Navigate into the cloned repository directory
+cd /tmp/temp_repo
+
+# Make changes to the Kubernetes manifest file(s)
+# For example, let's say you want to change the image tag in a deployment.yaml file
+sed -i "s|image:.*|image: bhaktiazurecicdregistry/$2:$3|g" k8s-specifications/$1-deployment.yaml
+
+# Add the modified files
+git add .
+
+# Commit the changes
+git commit -m "Update Kubernetes manifest"
+
+# Push the changes back to the repository
+git push
+
+# Cleanup: remove the temporary directory
+rm -rf /tmp/temp_repo
+
+
+
+
+In vote-service pipeline -> add new stage (task=shellscript@2) -> settings -> script path = scripts/updateK8sManifests.sh, Arguments = vote $imageRepository $tag
+
+
+
+
+
+
+
+
+
+
+
    
 
 
