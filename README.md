@@ -6,12 +6,16 @@ Import project using 'https://github.com/dockersamples/example-voting-app.git' u
 Set main branch as default branch.
 
 Run below commands in powershell to create resources in Azure (provided file should be in same folder where commands are executed.)
+
 login
 1. az login
+
 create resource group
 2. az group create --name azurecicd --location centralindia
+
 create container registry
 3. az deployment group create --name containerregisterycreate --resource-group azurecicd --template-file create-container-registry.json --parameters create-container-registry-parameters.json
+
 create vm
 4. az deployment group create --resource-group azurecicd --template-file azurevm.json --parameters "@azurevm.parameters.json"
 
@@ -28,6 +32,8 @@ trigger:
  paths:
    include:
      - result/*
+
+imageRepository: 'resultapp'
 
 update
   Agent VM image name
@@ -68,32 +74,39 @@ In connectd vm run below commands (Can be find when try to create new agent)
 2. wget https://download.agent.dev.azure.com/agent/4.255.0/vsts-agent-linux-x64-4.255.0.tar.gz (url of Download the agent)
 3. sudo apt update (only 1st time to update apt repositories)
 4. tar zxvf vsts-agent-linux-x64-4.255.0.tar.gz (extract tar file)
-5. ./config.sh
-  5.1 (provide server url - from document https://dev.azure.com/{yourorganization} -> https://dev.azure.com/bhaktiraval18112001 )
-  5.2 provide personal access token (get it from User settings-> personal access token-> create new one (name=azureagent, give full access) and save token) (name of agent pool - ex: azureagent) (name of agent - ex: azureagent)
-6. ls (verify that config.sh exist)
-7. sudo apt install docker.io (install docker)
-8. sudo usermod -aG docker azureuser (give permission of azure agent to docket daemon)
-10. logout
-11. ssh -i azureagent_key azureuser@4.247.140.83 (provide password)
-12. sudo systemctl restart docker
-13.  docker pull hello-world (verify image is pulled)
-14.  cd myagent
-15. ./config.sh
-16. ./run.sh
+5. sudo apt install docker.io (install docker)
+6. sudo usermod -aG docker azureuser (give permission of azure agent to docket daemon)
+7. logout
+8. ssh -i azureagent_key azureuser@4.247.140.83 (provide password)
+9. sudo systemctl restart docker
+10. docker pull hello-world (verify image is pulled)
+11. cd myagent
+12. ./config.sh
+  1 (provide server url - from document https://dev.azure.com/{yourorganization} -> https://dev.azure.com/bhaktiraval18112001 )
+  2 provide personal access token (get it from User settings-> personal access token-> create new one (name=azureagent, give full access) and save token) (name of agent pool - ex: azureagent) (name of agent - ex: azureagent)
+13. ls (verify that config.sh exist) 
+17. ./config.sh
+18. ./run.sh
 
 Now run the pipeline, it should be successful, check from azure devops if pipeline shows that permission is required then grant that.)
 
 Now create another two pipelines following above steps. (no need to create pool again, it can be used in another pipelines also)
 name of yml file = azure-pipelines-vote.yml
 in include = vote/*
+imageRepository: 'voteapp'
 Docketfile = vote/Dockerfile
 name of pipeline = vote-service
 
-name of yml file = azure-pipelines-vote.yml
-in include = vote/*
-Docketfile = vote/Dockerfile
-name of pipeline = vote-service
+name of yml file = azure-pipelines-worker.yml
+in include = worker/*
+imageRepository: 'workerapp'
+Docketfile = worker/Dockerfile
+name of pipeline = worker-service
+
+This pipeline will be failed because of some parameters.
+change worker->Dockerfile as below
+--platform=${BUILDPLATFORM} to --platform=linux
+RUN dotnet publish -c release -o /app -a $TARGETARCH --self-contained false --no-restore to RUN dotnet publish -c release -o /app --self-contained false --no-restore
    
 
 
