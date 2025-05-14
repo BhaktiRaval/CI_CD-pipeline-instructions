@@ -83,10 +83,10 @@ In connectd vm run below commands (Can be find when try to create new agent)
 11. cd myagent
 12. ./config.sh
   1 (provide server url - from document https://dev.azure.com/{yourorganization} -> https://dev.azure.com/bhaktiraval18112001 )
-  2 provide personal access token (get it from User settings-> personal access token-> create new one (name=azureagent, give full access) and save token) (name of agent pool - ex: azureagent) (name of agent - ex: azureagent)
+  2 provide personal access token (get it from User settings-> personal access token-> create new one (name=azureagent, give full access) and save token-will be needed in future) (name of agent pool - ex: azureagent) (name of agent - ex: azureagent)
 13. ls (verify that config.sh exist) 
-17. ./config.sh
-18. ./run.sh
+14. ./config.sh
+15. ./run.sh
 
 Now run the pipeline, it should be successful, check from azure devops if pipeline shows that permission is required then grant that.)
 
@@ -111,6 +111,53 @@ RUN dotnet publish -c release -o /app -a $TARGETARCH --self-contained false --no
 
 
 After that this last pipeline should run successfully.
+
+
+# Kubernetes
+
+Go to kubernetes services-> Create Kubernetes cluster
+Kubernetes cluster name = azuredevops, Zones 1
+-> next
+ go to agent pool and change Minimum node count = 1, Maximum node count = 2, Max pods per node = 30, Enable public IP per node-enabled -> update (if got any quota error then change the region)
+ 1. k8s cluster login
+ 2. ArgoCD
+ 3. Configure ArgoCD
+ 4. Update (shell) -> Repo
+
+After creating kubernetes cluster run below command
+az aks get-credentials --name azuredevops  --resource-group azurecicd
+kubectl get pods (not needed)
+go to argo cd-> getting started-> install kubectl (curl.exe -LO "https://dl.k8s.io/release/v1.33.0/bin/windows/amd64/kubectl.exe")-> copy install argo cd url and run in cmd.
+run-> kubectl get pods -n argocd
+
+Once all pods are in running state then move to config argocd.
+kubectl get secrets -n argocd
+kubectl edit secret argocd-initial-admin-secret -n argocd
+copy the password = UkU3RkZUUlBVbmZzd0hEcQ==
+echo UkU3RkZUUlBVbmZzd0hEcQ== | base64 --decode (gitbash-only this command-run others in cmd)
+copy output = RE7FFTRPUnfswHDq
+kubectl get svc -n argocd
+kubectl edit svc argocd-server -n argocd
+One file will be opened edit ClusterIP to NodePort
+kubectl get svc -n argocd (verify this line-> argocd-server  NodePort    10.0.168.192   <none>    80:32521/TCP,443:32074/TCP   55m -->> copy http port = 32521)
+kubectl get nodes -o wide (copy external-ip from output =  172.190.136.83)
+need to access = 172.190.136.83:32521
+
+to give permission to the port
+go to azure portal-> vmms-> Instances-> go into instance-> networking settings-> create port rule-> inbound port rule-> change Destination port ranges to 32521-> Add.)
+
+access 172.190.136.83:32521 from browser
+provide
+username = admin
+password = RE7FFTRPUnfswHDq
+copy saved personal access token(PAT) = 8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh
+in argocd-> settings-> repositories-> connect repo-> Choose your connection method: via http/https -> type=git, project=default,
+for repo url -> get it from azure devops portal from clone via http = https://bhaktiraval18112001@dev.azure.com/bhaktiraval18112001/voting-app/_git/voting-app
+replace bhaktiraval18112001 to PAT = 8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh
+final url = https://8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh@dev.azure.com/bhaktiraval18112001/voting-app/_git/voting-app
+Click on connect (status should be successful)
+
+Go to Applications -> new app -> Application Name=voteapp-service, project name=default, SYNC POLICY=automatic, repo url will be provided, path=k8s-specifications, cluster url-provided, Namespace=default -> Create
    
 
 
