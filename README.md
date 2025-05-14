@@ -106,7 +106,11 @@ name of pipeline = worker-service
 This pipeline will be failed because of some parameters.
 change worker->Dockerfile as below
 --platform=${BUILDPLATFORM} to --platform=linux
+RUN dotnet restore -a $TARGETARCH to RUN dotnet restore
 RUN dotnet publish -c release -o /app -a $TARGETARCH --self-contained false --no-restore to RUN dotnet publish -c release -o /app --self-contained false --no-restore
+
+
+After that this last pipeline should run successfully.
    
 
 
