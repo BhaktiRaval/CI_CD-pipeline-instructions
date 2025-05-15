@@ -66,7 +66,7 @@ After that go to that created pool-> agent-> new agent-> Linux, and follow below
 Connect to your linux vm. (follow below commands.)
 Open git bash and redirect to the path where your private ssh key is located.
 1. chmod 600 azureagent_key (for permission)
-2. ssh -i azureagent_key azureuser@4.247.140.83 (to connect vm)
+2. ssh -i azureagent_key azureuser@74.235.238.150 (to connect vm)
 3. Enter password for vm
 
 In connectd vm run below commands (Can be find when try to create new agent)
@@ -127,29 +127,31 @@ Kubernetes cluster name = azuredevops, Zones 1
 After creating kubernetes cluster run below command
 az aks get-credentials --name azuredevops  --resource-group azurecicd
 kubectl get pods (not needed)
-go to argo cd-> getting started-> install kubectl (curl.exe -LO "https://dl.k8s.io/release/v1.33.0/bin/windows/amd64/kubectl.exe")-> copy install argo cd url and run in cmd.
+go to argo cd-> getting started-> install kubectl (curl.exe -LO "https://dl.k8s.io/release/v1.33.0/bin/windows/amd64/kubectl.exe")-> 
+copy install argo cd url and run in cmd (kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml)
 run-> kubectl get pods -n argocd
 
 Once all pods are in running state then move to config argocd.
 kubectl get secrets -n argocd
 kubectl edit secret argocd-initial-admin-secret -n argocd
-copy the password = UkU3RkZUUlBVbmZzd0hEcQ==
-echo UkU3RkZUUlBVbmZzd0hEcQ== | base64 --decode (gitbash-only this command-run others in cmd)
-copy output = RE7FFTRPUnfswHDq
+copy the password = dUFLOEhtSzZQUGpDNC1Kbw==
+echo dUFLOEhtSzZQUGpDNC1Kbw== | base64 --decode (gitbash-only this command-run others in cmd)
+copy output = uAK8HmK6PPjC4-Jo
 kubectl get svc -n argocd
 kubectl edit svc argocd-server -n argocd
 One file will be opened edit ClusterIP to NodePort
-kubectl get svc -n argocd (verify this line-> argocd-server  NodePort    10.0.168.192   <none>    80:32521/TCP,443:32074/TCP   55m -->> copy http port = 32521)
-kubectl get nodes -o wide (copy external-ip from output =  172.190.136.83)
-need to access = 172.190.136.83:32521
+kubectl get svc -n argocd (verify this line-> argocd-server    NodePort    10.0.184.76    <none> 80:31029/TCP,443:30995/TCP    68m -->> copy http port = 31029)
+kubectl get nodes -o wide (copy external-ip from output =  172.191.85.172)
+need to access = 172.191.85.172:31029
 
 to give permission to the port
-go to azure portal-> vmms-> Instances-> go into instance-> networking settings-> create port rule-> inbound port rule-> change Destination port ranges to 32521-> Add.)
+go to azure portal-> vmms-> Instances-> go into instance-> networking settings-> create port rule-> inbound port rule-> change Destination port ranges to 31029 -> Add.)
 
-access 172.190.136.83:32521 from browser
+access 172.191.85.172:31029 from browser
 provide
 username = admin
-password = RE7FFTRPUnfswHDq
+password = uAK8HmK6PPjC4-Jo
 copy saved personal access token(PAT) = 8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh
 in argocd-> settings-> repositories-> connect repo-> Choose your connection method: via http/https -> type=git, project=default,
 for repo url -> get it from azure devops portal from clone via http = https://bhaktiraval18112001@dev.azure.com/bhaktiraval18112001/voting-app/_git/voting-app
@@ -166,31 +168,23 @@ paste below script in that file
 
 
 #!/bin/bash
-
 set -x
-
 # Set the repository URL
 REPO_URL="https://8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh@dev.azure.com/bhaktiraval18112001/voting-app/_git/voting-app"
-
 # Clone the git repository into the /tmp directory
+rm -rf /tmp/temp_repo
 git clone "$REPO_URL" /tmp/temp_repo
-
 # Navigate into the cloned repository directory
 cd /tmp/temp_repo
-
 # Make changes to the Kubernetes manifest file(s)
 # For example, let's say you want to change the image tag in a deployment.yaml file
-sed -i "s|image:.*|image: bhaktiazurecicdregistry/$2:$3|g" k8s-specifications/$1-deployment.yaml
-
+sed -i "s|image:.*|image: bhaktiazurecicdregistry.azurecr.io/$2:$3|g" k8s-specifications/$1-deployment.yaml
 # Add the modified files
 git add .
-
 # Commit the changes
 git commit -m "Update Kubernetes manifest"
-
 # Push the changes back to the repository
 git push
-
 # Cleanup: remove the temporary directory
 rm -rf /tmp/temp_repo
 
@@ -198,6 +192,62 @@ rm -rf /tmp/temp_repo
 
 
 In vote-service pipeline -> add new stage (task=shellscript@2) -> settings -> script path = scripts/updateK8sManifests.sh, Arguments = vote $imageRepository $tag
+
+login into vm and agent then run
+sudo apt install dos2unix
+
+run below commands in cmd
+kubectl edit cm argocd-cm -n argocd
+in opened file add below data at last and save
+data:
+ timeout.reconciliation: 10s
+ run - kubectl get pods (noticed vote-5768cb6584-z4fjh     0/1     ImagePullBackOff   0          15m)
+ got azure container registry -> access keys -> enable admin user -> get username=bhaktiazurecicdregistry and password=f9ElSFPk5V8ywCR3Jvgqa1jJHy3Lbg0sacOEvS4u26+ACRDH2jES)
+use below command and add required parameters and run in cmd
+kubectl create secret docker-registry <secret-name> \
+    --namespace <namespace> \
+    --docker-server=<container-registry-name>.azurecr.io \
+    --docker-username=<service-principal-ID> \
+    --docker-password=<service-principal-password>
+ 
+kubectl create secret docker-registry acr-secret --namespace default --docker-server=bhaktiazurecicdregistry.azurecr.io --docker-username=bhaktiazurecicdregistry --docker-password=f9ElSFPk5V8ywCR3Jvgqa1jJHy3Lbg0sacOEvS4u26+ACRDH2jES
+(can get reference from kubernetes docs image pull secrets)
+Edit k8s-specifications/vote-deployment.yaml -> spec part file as below
+    spec:
+      containers:
+      - image: bhaktiazurecicdregistry.azurecr.io/votingapp:32
+        name: vote
+        ports:
+        - containerPort: 80
+          name: vote
+      imagePullSecrets:
+      - name: acr-secret
+
+Now to verify working change vote -> app.py ->
+from
+option_a = os.getenv('OPTION_A', "Cats")
+option_b = os.getenv('OPTION_B', "Dogs")
+to
+option_a = os.getenv('OPTION_A', "Rain")
+option_b = os.getenv('OPTION_B', "Snow")
+pipeline will be triggered.
+
+Verify process by running below commands
+kubectl get deploy vote -o yaml
+(containers:
+- image: bhaktiazurecicdregistry.azurecr.io/votingapp:33
+) - latest image will be shown that deployed
+kubectl get pods (all pods should be in running state)
+
+run below commands to get deploment url
+kubectl get svc (vote         NodePort    10.0.69.180    <none>        8080:31000/TCP   3h20m) (get port number of vote service = 31000)
+kubectl get node -o wide (get external ip address =  172.191.85.172 )
+final url =  172.191.85.172:31000
+(need to open 31000 port)
+go to vmss -> instances -> network settings -> create port rule-> inbound port rule-> change Destination port ranges to 31000 -> Add.
+
+Now at 172.191.85.172:31000 we can see updated portal.
+
 
 
 
