@@ -142,8 +142,8 @@ kubectl get svc -n argocd
 kubectl edit svc argocd-server -n argocd
 One file will be opened edit ClusterIP to NodePort
 kubectl get svc -n argocd (verify this line-> argocd-server    NodePort    10.0.184.76    <none> 80:31029/TCP,443:30995/TCP    68m -->> copy http port = 31029)
-kubectl get nodes -o wide (copy external-ip from output =  172.191.85.172)
-need to access = 172.191.85.172:31029
+kubectl get nodes -o wide (copy external-ip from output =   172.206.194.130)
+need to access =  172.206.194.130:31029
 
 to give permission to the port
 go to azure portal-> vmms-> Instances-> go into instance-> networking settings-> create port rule-> inbound port rule-> change Destination port ranges to 31029 -> Add.)
@@ -241,12 +241,12 @@ kubectl get pods (all pods should be in running state)
 
 run below commands to get deploment url
 kubectl get svc (vote         NodePort    10.0.69.180    <none>        8080:31000/TCP   3h20m) (get port number of vote service = 31000)
-kubectl get node -o wide (get external ip address =  172.191.85.172 )
-final url =  172.191.85.172:31000
+kubectl get node -o wide (get external ip address =   172.206.194.130  )
+final url = 172.206.194.130:31000
 (need to open 31000 port)
 go to vmss -> instances -> network settings -> create port rule-> inbound port rule-> change Destination port ranges to 31000 -> Add.
 
-Now at 172.191.85.172:31000 we can see updated portal.
+Now at  172.206.194.130:31000 we can see updated portal.
 
 
 
