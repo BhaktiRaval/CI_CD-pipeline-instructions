@@ -156,19 +156,6 @@ provide
 username = admin
 password = uAK8HmK6PPjC4-Jo
 
-
-
-
-
-echo c2JXeUNmY09tNUpKWFVrdg== | base64 --decode
-sbWyCfcOm5JJXUkv
-172.191.11.131:32185
-
-
-
-
-
-
 copy saved personal access token(PAT) = 8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh
 in argocd-> settings-> repositories-> connect repo-> Choose your connection method: via http/https -> type=git, project=default,
 for repo url -> get it from azure devops portal from clone via http = https://bhaktiraval18112001@dev.azure.com/bhaktiraval18112001/voting-app/_git/voting-app
@@ -225,8 +212,25 @@ code of new stage is as below
 
       
 
+
+
+
+
+echo c2JXeUNmY09tNUpKWFVrdg== | base64 --decode
+sbWyCfcOm5JJXUkv
+172.191.11.131:32185
+
+
+
+
+
+
 login into vm and agent then run
 sudo apt install dos2unix
+cd /home/azureuser/myagent/_work/2/s/scripts
+dos2unix updateK8sManifests.sh
+bash updateK8sManifests.sh vote votingapp 44
+
 
 run below commands in cmd
 kubectl edit cm argocd-cm -n argocd
