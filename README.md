@@ -124,7 +124,8 @@ Kubernetes cluster name = azuredevops, Zones 1
  3. Configure ArgoCD
  4. Update (shell) -> Repo
 
-After creating kubernetes cluster run below command
+# After creating kubernetes cluster run below command
+
 az aks get-credentials --name azuredevops  --resource-group azurecicd
 kubectl get pods (not needed)
 go to argo cd-> getting started-> install kubectl (curl.exe -LO "https://dl.k8s.io/release/v1.33.0/bin/windows/amd64/kubectl.exe")-> 
@@ -136,8 +137,10 @@ Once all pods are in running state then move to config argocd.
 kubectl get secrets -n argocd
 kubectl edit secret argocd-initial-admin-secret -n argocd
 copy the password = dUFLOEhtSzZQUGpDNC1Kbw==
+
 echo dUFLOEhtSzZQUGpDNC1Kbw== | base64 --decode (gitbash-only this command-run others in cmd)
 copy output = uAK8HmK6PPjC4-Jo
+
 kubectl get svc -n argocd
 kubectl edit svc argocd-server -n argocd
 One file will be opened edit ClusterIP to NodePort
@@ -152,6 +155,20 @@ access 172.191.85.172:31029 from browser
 provide
 username = admin
 password = uAK8HmK6PPjC4-Jo
+
+
+
+
+
+echo c2JXeUNmY09tNUpKWFVrdg== | base64 --decode
+sbWyCfcOm5JJXUkv
+172.191.11.131:32185
+
+
+
+
+
+
 copy saved personal access token(PAT) = 8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh
 in argocd-> settings-> repositories-> connect repo-> Choose your connection method: via http/https -> type=git, project=default,
 for repo url -> get it from azure devops portal from clone via http = https://bhaktiraval18112001@dev.azure.com/bhaktiraval18112001/voting-app/_git/voting-app
@@ -191,7 +208,22 @@ rm -rf /tmp/temp_repo
 
 
 
-In vote-service pipeline -> add new stage (task=shellscript@2) -> settings -> script path = scripts/updateK8sManifests.sh, Arguments = vote $imageRepository $tag
+In vote-service pipeline -> add new stage (task=shellscript@2) -> settings -> script path = scripts/updateK8sManifests.sh, Arguments = vote $(imageRepository) $(tag)
+
+code of new stage is as below
+
+- stage: Update
+  displayName: Update
+  jobs:
+  - job: Update
+    displayName: Update
+    steps:
+    - task: ShellScript@2
+      inputs:
+        scriptPath: 'scripts/updateK8sManifests.sh'
+        args: 'vote $(imageRepository) $(tag)'
+
+      
 
 login into vm and agent then run
 sudo apt install dos2unix
