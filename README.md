@@ -159,6 +159,8 @@ password = uAK8HmK6PPjC4-Jo
 copy saved personal access token(PAT) = 8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh
 in argocd-> settings-> repositories-> connect repo-> Choose your connection method: via http/https -> type=git, project=default,
 for repo url -> get it from azure devops portal from clone via http = https://bhaktiraval18112001@dev.azure.com/bhaktiraval18112001/voting-app/_git/voting-app
+
+
 replace bhaktiraval18112001 to PAT = 8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh
 final url = https://8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh@dev.azure.com/bhaktiraval18112001/voting-app/_git/voting-app
 Click on connect (status should be successful)
@@ -210,20 +212,6 @@ code of new stage is as below
         scriptPath: 'scripts/updateK8sManifests.sh'
         args: 'vote $(imageRepository) $(tag)'
 
-      
-
-
-
-
-
-echo c2JXeUNmY09tNUpKWFVrdg== | base64 --decode
-sbWyCfcOm5JJXUkv
-172.191.11.131:32185
-
-
-
-
-
 
 login into vm and agent then run
 sudo apt install dos2unix
@@ -238,7 +226,7 @@ in opened file add below data at last and save
 data:
  timeout.reconciliation: 10s
  run - kubectl get pods (noticed vote-5768cb6584-z4fjh     0/1     ImagePullBackOff   0          15m)
- got azure container registry -> access keys -> enable admin user -> get username=bhaktiazurecicdregistry and password=f9ElSFPk5V8ywCR3Jvgqa1jJHy3Lbg0sacOEvS4u26+ACRDH2jES)
+ got azure container registry -> Setting -> access keys -> enable admin user -> get username=bhaktiazurecicdregistry and password=f9ElSFPk5V8ywCR3Jvgqa1jJHy3Lbg0sacOEvS4u26+ACRDH2jES)
 use below command and add required parameters and run in cmd
 kubectl create secret docker-registry <secret-name> \
     --namespace <namespace> \
@@ -275,7 +263,7 @@ kubectl get deploy vote -o yaml
 ) - latest image will be shown that deployed
 kubectl get pods (all pods should be in running state)
 
-run below commands to get deploment url
+run below commands to get final url where project is deployed
 kubectl get svc (vote         NodePort    10.0.69.180    <none>        8080:31000/TCP   3h20m) (get port number of vote service = 31000)
 kubectl get node -o wide (get external ip address =   172.206.194.130  )
 final url = 172.206.194.130:31000
@@ -288,14 +276,6 @@ Now at  172.206.194.130:31000 we can see updated portal.
 
 
 
-
-
-
-
-
-
-
-   
 
 
 
