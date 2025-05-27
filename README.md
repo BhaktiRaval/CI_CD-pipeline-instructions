@@ -213,11 +213,18 @@ code of new stage is as below
         args: 'vote $(imageRepository) $(tag)'
 
 
-login into vm and agent then run
+(uploading script from machine is recommended and When uploading scripts do below steps)
+Use VS Code or another code editor.
+In VS Code (bottom-right), set line endings to LF before saving.
+Ensure encoding is UTF-8.
+
+
+If you copy and paste the script then -> login into vm/agent -> then run below commands (To prevent this extra work and other errors, upload from machine.)
 sudo apt install dos2unix
 cd /home/azureuser/myagent/_work/2/s/scripts (can get from pipeline inspection)
 dos2unix updateK8sManifests.sh
 bash updateK8sManifests.sh vote votingapp 44
+
 
 
 run below commands in cmd
