@@ -11,7 +11,7 @@ login
 1. az login
 
 create resource group
-2. az group create --name azurecicd --location centralindia
+2. az group create --name azurecicd --location eastus
 
 create container registry
 3. az deployment group create --name containerregisterycreate --resource-group azurecicd --template-file create-container-registry.json --parameters create-container-registry-parameters.json
@@ -215,7 +215,7 @@ code of new stage is as below
 
 login into vm and agent then run
 sudo apt install dos2unix
-cd /home/azureuser/myagent/_work/2/s/scripts
+cd /home/azureuser/myagent/_work/2/s/scripts (can get from pipeline inspection)
 dos2unix updateK8sManifests.sh
 bash updateK8sManifests.sh vote votingapp 44
 
