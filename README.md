@@ -1,3 +1,15 @@
+# Main structure of flow
+
+| Action                                 | Triggered In | Result                              	    |
+| -------------------------------------- | ------------ | -----------------------------------------|
+| You commit code                        | Azure DevOps | Pipeline starts                     	    |
+| Pipeline builds & pushes image to ACR  | ACR          | Stores `:123` version               	    |
+| Pipeline updates image tag in Git YAML | Git          | `vote-deployment.yaml` has new image tag |
+| ArgoCD sees change in Git              | ArgoCD       | Syncs to AKS                             |
+| AKS uses image from ACR                | ACR + AKS    | Deployment is rolled out             	   |
+
+
+
 # CI_CD-pipeline-instructions
 Create project named 'voting-app' in Azure devops portal.
 
@@ -241,7 +253,7 @@ kubectl create secret docker-registry <secret-name> \
     --docker-username=<service-principal-ID> \
     --docker-password=<service-principal-password>
  
-kubectl create secret docker-registry acr-secret --namespace default --docker-server=bhaktiazurecicdregistry.azurecr.io --docker-username=bhaktiazurecicdregistry --docker-password=f9ElSFPk5V8ywCR3Jvgqa1jJHy3Lbg0sacOEvS4u26+ACRDH2jES
+kubectl create secret docker-registry acr-secret --namespace default --docker-server=bhaktiazurecicdregistry.azurecr.io --docker-username=bhaktiazurecicdregistry --docker-password=f9ElSFPk5V8ywCR3Jvgqa1jJHy3Lbg0sacOEvS4u26+ACRDH2jES  (AKS uses these credentials to authenticate to ACR)
 (can get reference from kubernetes docs image pull secrets)
 Edit k8s-specifications/vote-deployment.yaml -> spec part file as below
     spec:
