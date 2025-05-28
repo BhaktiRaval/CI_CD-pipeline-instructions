@@ -138,7 +138,7 @@ Kubernetes cluster name = azuredevops, Zones 1
  4. Update (shell) -> Repo
 
 # After creating kubernetes cluster run below command
-
+<pre>
 az aks get-credentials --name azuredevops  --resource-group azurecicd
 kubectl get pods (not needed)
 go to argo cd-> getting started-> install kubectl (curl.exe -LO "https://dl.k8s.io/release/v1.33.0/bin/windows/amd64/kubectl.exe")-> 
@@ -150,6 +150,7 @@ Once all pods are in running state then move to config argocd.
 kubectl get secrets -n argocd
 kubectl edit secret argocd-initial-admin-secret -n argocd
 copy the password = dUFLOEhtSzZQUGpDNC1Kbw==
+
 
 echo dUFLOEhtSzZQUGpDNC1Kbw== | base64 --decode (gitbash-only this command-run others in cmd)
 copy output = uAK8HmK6PPjC4-Jo
@@ -177,6 +178,7 @@ for repo url -> get it from azure devops portal from clone via http = https://bh
 replace bhaktiraval18112001 to PAT = 8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh
 final url = https://8gGwcmbSYkV6rzKw1KM0vDtPNjOZ0kjyGA6ASkNrk9XE8Fplqxf4JQQJ99BEACAAAAAAAAAAAAASAZDO1lrh@dev.azure.com/bhaktiraval18112001/voting-app/_git/voting-app
 Click on connect (status should be successful)
+</pre>
 
 Go to Applications -> new app -> Application Name=voteapp-service, project name=default, SYNC POLICY=automatic, repo url will be provided, path=k8s-specifications, cluster url-provided, Namespace=default -> Create
 
@@ -185,7 +187,7 @@ In repo create new folder=scripts, file name = updateK8sManifests.sh
 paste below script in that file
 
 
-
+<pre>
 #!/bin/bash
 set -x
 # Set the repository URL
@@ -206,6 +208,7 @@ git commit -m "Update Kubernetes manifest"
 git push
 # Cleanup: remove the temporary directory
 rm -rf /tmp/temp_repo
+</pre>
 
 
 
@@ -213,8 +216,8 @@ rm -rf /tmp/temp_repo
 In vote-service pipeline -> add new stage (task=shellscript@2) -> settings -> script path = scripts/updateK8sManifests.sh, Arguments = vote $(imageRepository) $(tag)
 
 code of new stage is as below
-
-- stage: Update
+ <pre>
+  - stage: Update
   displayName: Update
   jobs:
   - job: Update
@@ -224,7 +227,7 @@ code of new stage is as below
       inputs:
         scriptPath: 'scripts/updateK8sManifests.sh'
         args: 'vote $(imageRepository) $(tag)'
-
+ </pre>
 
 (uploading script from machine is recommended and When uploading scripts do below steps)
 Use VS Code or another code editor.
@@ -291,6 +294,73 @@ final url = 172.206.194.130:31000
 go to vmss -> instances -> network settings -> create port rule-> inbound port rule-> change Destination port ranges to 31000 -> Add.
 
 Now at  172.206.194.130:31000 we can see updated portal.
+
+
+
+
+
+
+
+
+# Advance
+🎯 Objective:
+Pause your pipeline before deploying to production (or a sensitive stage)
+Manually approve (or timeout after a day)
+In our case -->> Pause the pipeline after Push, request manual approval, and then proceed to Update. (Approval only works for deployment jobs, so in our pipeline we have updated 'Update job' as deployment job)
+
+🔹 Step 1: Create the Environment in Azure DevOps
+Go to your Azure DevOps project
+Navigate to: Pipelines → Environments
+Click ➕ New Environment
+Enter:
+Name: approval-env
+Resource Type:
+Select None (for approval only)
+Or choose Kubernetes to link an AKS namespace
+Click Create
+
+🔹 Step 2: Add Approval to the Environment
+Go to Pipelines → Environments → approval-env
+Click ... → Approvals and checks → + Add
+Select Approvals
+Configure:
+Approvers: yourself or team members
+Timeout: set to 1 day (or your preference)
+Optionally enable requestor cannot approve
+Click Create
+
+🔹 Step 3: Update the YAML Pipeline
+Update your pipeline YAML to associate the Update stage with the environment:
+<pre>
+ - stage: Update
+  displayName: Update
+  dependsOn: Push
+  jobs:
+  - deployment: UpdateK8s
+    displayName: Update Kubernetes Manifests
+    environment:
+      name: 'approval-env'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: ShellScript@2
+            displayName: Update Manifests
+            inputs:
+              scriptPath: 'scripts/updateK8sManifests.sh'
+              args: 'vote $(imageRepository) $(tag)'
+</pre>
+
+
+<ul>
+<li>If you use only dependsOn: Build without specifying a condition, the stage runs after Build finishes, even if Build failed.</li>
+<li>If you use dependsOn: Build and condition: succeeded(), it runs only if Build succeeded.</li>
+<li>Approval is tied to the environment on the deployment job, not the entire stage.</li>
+<li>If your stage has multiple jobs, only the deployment job referencing the environment waits for approval.</li>
+<li>If your stage has just one deployment job targeting the environment, effectively the whole stage is gated by the approval.</li>
+</ul>
+
+
 
 
 
