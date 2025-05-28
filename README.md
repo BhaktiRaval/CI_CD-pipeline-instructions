@@ -27,6 +27,8 @@ create resource group
 
 create container registry
 3. az deployment group create --name containerregisterycreate --resource-group azurecicd --template-file create-container-registry.json --parameters create-container-registry-parameters.json
+(If ACR is deleted from Azure portal then delete that service connection and create new connection for new acr, then update id in pipeline dockerRegistryServiceConnection: '9bf0bb84-daa2-4791-819e-2feda83dfaa6')
+
 
 create vm
 4. az deployment group create --resource-group azurecicd --template-file azurevm.json --parameters "@azurevm.parameters.json"
@@ -358,6 +360,7 @@ Update your pipeline YAML to associate the Update stage with the environment:
 <li>Approval is tied to the environment on the deployment job, not the entire stage.</li>
 <li>If your stage has multiple jobs, only the deployment job referencing the environment waits for approval.</li>
 <li>If your stage has just one deployment job targeting the environment, effectively the whole stage is gated by the approval.</li>
+<li>If reques is not approved in configured timeline then that stage will be skipped.</li>
 </ul>
 
 
