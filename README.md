@@ -8,7 +8,7 @@
 | ArgoCD sees change in Git              | ArgoCD       | Syncs to AKS                             |
 | AKS uses image from ACR                | ACR + AKS    | Deployment is rolled out             	   |
 
-
+<img src="https://github.com/user-attachments/assets/9936bb9e-5359-4ce7-a635-e51f1ef5a7cb" alt="DevOps CI_CD Process Flow" width="250"/>
 
 # CI_CD-pipeline-instructions
 Create project named 'voting-app' in Azure devops portal.
@@ -69,6 +69,7 @@ go to setting update command to push then add
 then save and run, you will get error of azure agent.
 
 # Follow below commands to establish connection of pool to the pipeline.
+
 Go to 'https://learn.microsoft.com/en-us/azure/devops/pipelines/agents/linux-agent?view=azure-devops&tabs=IP-V4' link.
 Go to Azure devops-> agent pool-> add pool -> self hosted-> named(azureagent)-> 
 Grant access permission to all pipelines-> Create.
