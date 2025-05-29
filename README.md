@@ -8,7 +8,7 @@
 | ArgoCD sees change in Git              | ArgoCD       | Syncs to AKS                             |
 | AKS uses image from ACR                | ACR + AKS    | Deployment is rolled out             	   |
 
-<img src="https://github.com/user-attachments/assets/9936bb9e-5359-4ce7-a635-e51f1ef5a7cb" alt="DevOps CI_CD Process Flow" width="250"/>
+<img src="https://github.com/user-attachments/assets/a5297db0-89c1-4e42-85fa-da643755e72e" alt="DevOps CI_CD Process Flow" width="1000"/>
 
 # CI_CD-pipeline-instructions
 Create project named 'voting-app' in Azure devops portal.
@@ -18,7 +18,7 @@ Import project using 'https://github.com/dockersamples/example-voting-app.git' u
 Set main branch as default branch.
 
 Run below commands in powershell to create resources in Azure (provided file should be in same folder where commands are executed.)
-
+<pre>
 login
 1. az login
 
@@ -29,18 +29,18 @@ create container registry
 3. az deployment group create --name containerregisterycreate --resource-group azurecicd --template-file create-container-registry.json --parameters create-container-registry-parameters.json
 (If ACR is deleted from Azure portal then delete that service connection and create new connection for new acr, then update id in pipeline dockerRegistryServiceConnection: '9bf0bb84-daa2-4791-819e-2feda83dfaa6')
 
-
 create vm
 4. az deployment group create --resource-group azurecicd --template-file azurevm.json --parameters "@azurevm.parameters.json"
+</pre>
 
 Go to Azure devops, follow below steps to create pipeline.
 
 Click on 'Create Pipeline'-> choose azure repos git-> choose voting-app-> select a docker image (build & push an image to Azure container registry)-> select subscription and continue.
 
-# Select 'bhaktiazurecicdregistry' container registry-> Rename Image to 'result-service'-> 'validate and configure'.
+Select 'bhaktiazurecicdregistry' container registry-> Rename Image to 'result-service'-> 'validate and configure'.
 
 name of yml file = azure-pipelines-result.yml
-
+<pre>
 update trigger to
 trigger:
  paths:
@@ -64,7 +64,7 @@ update
 go to setting and update below data then add
 update command to build
 update Dockerfile to result/Dockerfile
-
+</pre>
 similarly, create another stage for push
 go to setting update command to push then add
 
@@ -78,6 +78,7 @@ Grant access permission to all pipelines-> Create.
 
 After that go to that created pool-> agent-> new agent-> Linux, and follow below commands.
 
+<pre>
 Connect to your linux vm. (follow below commands.)
 Open git bash and redirect to the path where your private ssh key is located.
 1. chmod 600 azureagent_key (for permission)
@@ -102,10 +103,12 @@ In connectd vm run below commands (Can be find when try to create new agent)
 13. ls (verify that config.sh exist) 
 14. ./config.sh
 15. ./run.sh
+</pre>
 
 Now run the pipeline, it should be successful, check from azure devops if pipeline shows that permission is required then grant that.)
 
 Now create another two pipelines following above steps. (no need to create pool again, it can be used in another pipelines also)
+<pre>
 name of yml file = azure-pipelines-vote.yml
 in include = vote/*
 imageRepository: 'voteapp'
@@ -123,7 +126,7 @@ change worker->Dockerfile as below
 --platform=${BUILDPLATFORM} to --platform=linux
 RUN dotnet restore -a $TARGETARCH to RUN dotnet restore
 RUN dotnet publish -c release -o /app -a $TARGETARCH --self-contained false --no-restore to RUN dotnet publish -c release -o /app --self-contained false --no-restore
-
+</pre>
 
 After that this last pipeline should run successfully.
 
@@ -231,6 +234,7 @@ code of new stage is as below
         args: 'vote $(imageRepository) $(tag)'
  </pre>
 
+<pre>
 (uploading script from machine is recommended and When uploading scripts do below steps)
 Use VS Code or another code editor.
 In VS Code (bottom-right), set line endings to LF before saving.
@@ -242,15 +246,16 @@ sudo apt install dos2unix
 cd /home/azureuser/myagent/_work/2/s/scripts (can get from pipeline inspection)
 dos2unix updateK8sManifests.sh
 bash updateK8sManifests.sh vote votingapp 44
-
+</pre>
 
 
 run below commands in cmd
+<pre>
 kubectl edit cm argocd-cm -n argocd
 in opened file add below data at last and save
 data:
  timeout.reconciliation: 10s
- run - kubectl get pods (noticed vote-5768cb6584-z4fjh     0/1     ImagePullBackOff   0          15m)
+ run - kubectl get pods (noticed vote-5768cb6584-z4fjh     0/1     ImagePullBackOff     0     15m)
  got azure container registry -> Setting -> access keys -> enable admin user -> get username=bhaktiazurecicdregistry and password=f9ElSFPk5V8ywCR3Jvgqa1jJHy3Lbg0sacOEvS4u26+ACRDH2jES)
 use below command and add required parameters and run in cmd
 kubectl create secret docker-registry <secret-name> \
@@ -261,7 +266,9 @@ kubectl create secret docker-registry <secret-name> \
  
 kubectl create secret docker-registry acr-secret --namespace default --docker-server=bhaktiazurecicdregistry.azurecr.io --docker-username=bhaktiazurecicdregistry --docker-password=f9ElSFPk5V8ywCR3Jvgqa1jJHy3Lbg0sacOEvS4u26+ACRDH2jES  (AKS uses these credentials to authenticate to ACR)
 (can get reference from kubernetes docs image pull secrets)
+</pre>
 Edit k8s-specifications/vote-deployment.yaml -> spec part file as below
+<pre>
     spec:
       containers:
       - image: bhaktiazurecicdregistry.azurecr.io/votingapp:32
@@ -271,8 +278,9 @@ Edit k8s-specifications/vote-deployment.yaml -> spec part file as below
           name: vote
       imagePullSecrets:
       - name: acr-secret
-
+</pre>
 Now to verify working change vote -> app.py ->
+<pre>
 from
 option_a = os.getenv('OPTION_A', "Cats")
 option_b = os.getenv('OPTION_B', "Dogs")
@@ -280,26 +288,23 @@ to
 option_a = os.getenv('OPTION_A', "Rain")
 option_b = os.getenv('OPTION_B', "Snow")
 pipeline will be triggered.
+ </pre>
 
 Verify process by running below commands
-kubectl get deploy vote -o yaml
-(containers:
-- image: bhaktiazurecicdregistry.azurecr.io/votingapp:33
-) - latest image will be shown that deployed
+<pre>
+kubectl get deploy vote -o yaml (containers: - image: bhaktiazurecicdregistry.azurecr.io/votingapp:33) - latest deployed image will be shown 
 kubectl get pods (all pods should be in running state)
+ </pre>
 
 run below commands to get final url where project is deployed
+<pre>
 kubectl get svc (vote         NodePort    10.0.69.180    <none>        8080:31000/TCP   3h20m) (get port number of vote service = 31000)
 kubectl get node -o wide (get external ip address =   172.206.194.130  )
 final url = 172.206.194.130:31000
 (need to open 31000 port)
 go to vmss -> instances -> network settings -> create port rule-> inbound port rule-> change Destination port ranges to 31000 -> Add.
-
+</pre>
 Now at  172.206.194.130:31000 we can see updated portal.
-
-
-
-
 
 
 
